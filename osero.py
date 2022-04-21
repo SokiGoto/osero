@@ -12,8 +12,8 @@ white = -1
 blank = 0
 black = 1
 
-player_white = ["cpu", "random"]
-player_black = ["cpu", "deep1"]
+player_white = ["cp", "deep1"]
+player_black = ["cpu", "deep1_forbid"]
 
 support = True
 
@@ -91,6 +91,8 @@ def computer(turn, board, mode = "random"):
         x,y = cpu.cpu_random(board)
     elif mode == "deep1":
         x,y = cpu.cpu_weak(board, turn)
+    elif mode == "deep1_forbid":
+        x,y = cpu.cpu_weak_forbid(board, turn)
     else:
         x,y = cpu.cpu_random(board)
     return x, y
@@ -120,10 +122,10 @@ def fin_game_check(turn, board, passpass = False):
             winner = 0
             print("draw")
         elif white_num > black_num:
-            winner = black
+            winner = white
             print("win white")
         elif white_num < black_num:
-            winner = white
+            winner = black
             print("win black")
     return fin_game, winner
 
@@ -252,3 +254,20 @@ def board_new():
 if __name__ == '__main__':
     board = board_new()
     winner = main(start_turn, board)
+
+    #win_white = 0
+    #win_black = 0
+    #drawww    = 0
+    #n = 400
+    #for i in range(n):
+    #    board = board_new()
+    #    winner = main(start_turn, board)
+    #    if winner == white:
+    #        win_white += 1
+    #    elif winner == black:
+    #        win_black += 1
+    #    else:
+    #        drawww += 1
+    #    print("white : ", win_white, "  ", win_white / (i+1) * 100, "%")
+    #    print("black : ", win_black, "  ", win_black / (i+1) * 100, "%")
+    #    print("draw  : ", drawww, "  ", drawww / (i+1) * 100, "%")
