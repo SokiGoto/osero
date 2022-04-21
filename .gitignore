@@ -1,2 +1,2 @@
-./kihu
-./__pycache__
+kihu/
+__pycache__/
