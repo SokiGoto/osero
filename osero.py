@@ -8,7 +8,6 @@ import numpy as np
 import cpu
 
 cell = 8
-
 white = -1
 blank = 0
 black = 1
@@ -21,19 +20,25 @@ support = True
 kihu = True
 
 kihu_read = False
-kihu_read_file = "kihu/kihu20220419-140000.txt"
+kihu_read_file = "kihu/kihu.txt"
 kihu_read_cnt = 0
+
+if kihu_read:
+    player_white = ["", ""]
+    player_black = ["", ""]
+    kihu = False
+
 
 start_turn = black
 
 vec = [-1, 0, 1]
 
-board = [[0 for i in range(cell)]for j in range(cell)]
-board = np.array(board)
-board[3][4] = black
-board[4][3] = black
-board[3][3] = white
-board[4][4] = white
+#board = [[0 for i in range(cell)]for j in range(cell)]
+#board = np.array(board)
+#board[3][4] = black
+#board[4][3] = black
+#board[3][3] = white
+#board[4][4] = white
 
 if kihu_read:
     with open(kihu_read_file, mode = "r") as f:
@@ -46,40 +51,42 @@ if kihu_read:
 if kihu:
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
     filepath = "./kihu/kihu" + now.strftime('%Y%m%d-%H%M%S') + ".txt"
+    #filepath = "./kihu/kihu.txt"
     f =  open(filepath, mode = "w")
     f.close()
 
-def main(turn):
-    put_able_cnt = put_able_check(turn)
-    print_out()
+def main(turn, board):
+    put_able_cnt, board = put_able_check(turn, board)
+    print_out(board)
     if put_able_cnt == 0:
-        fin_game_check(turn, True)
-        print("pass")
-        main(turn*-1)
-
-    if turn == white:
-        print("turn : white")
-        if player_white[0] == "cpu":
-            x, y = computer(turn, player_white[1])
-        else:
-            x, y = input_num()
+        fin_flag, winner = fin_game_check(turn, board, True)
     else:
-        print("turn : black")
-        if player_black[0] == "cpu":
-            x, y = computer(turn, player_black[1])
+        if turn == white:
+            print("turn : white")
+            if player_white[0] == "cpu":
+                x, y = computer(turn, board, player_white[1])
+            else:
+                x, y = input_num(board)
         else:
-            x, y = input_num()
+            print("turn : black")
+            if player_black[0] == "cpu":
+                x, y = computer(turn, board, player_black[1])
+            else:
+                x, y = input_num(board)
 
-    if kihu:
-        with open(filepath, mode = "a") as f:
-            f.write("{} {}\n".format(x, y))
-    convert(x, y, turn)
+        if kihu:
+            with open(filepath, mode = "a") as f:
+                f.write("{} {}\n".format(x, y))
+        board = convert(x, y, turn, board)
 
-    fin_game_check(turn)
-    #time.sleep(1)
-    main(turn*-1)
+        fin_flag, winner = fin_game_check(turn, board)
+        #time.sleep(1)
+    if fin_flag:
+        return winner
+    winner = main(turn*-1, board)
+    return winner
 
-def computer(turn, mode = "random"):
+def computer(turn, board, mode = "random"):
     if mode == "random":
         x,y = cpu.cpu_random(board)
     elif mode == "deep1":
@@ -89,40 +96,42 @@ def computer(turn, mode = "random"):
     return x, y
 
 
-def fin_game_check(turn, passpass = False):
+def fin_game_check(turn, board, passpass = False):
+    winner = 0
     white_num = np.count_nonzero(board == white)
     black_num = np.count_nonzero(board == black)
     fin_game = False
     if white_num == 0 or black_num == 0:
+        print_out(board)
         fin_game = True
     if (not 0 in board):
+        print_out(board)
         fin_game = True
     if passpass:
-        put_able_cnt = put_able_check(turn * -1)
+        put_able_cnt, tmp = put_able_check(turn * -1, board)
         if put_able_cnt == 0:
             fin_game = True
+        else:
+            print("pass")
 
     if fin_game:
-        print_out()
         print("white : " + str(white_num) + "   black : " + str(black_num))
         if white_num == black_num:
+            winner = 0
             print("draw")
-            time.sleep(1)
-            exit()
         elif white_num > black_num:
+            winner = black
             print("win white")
-            time.sleep(1)
-            exit()
         elif white_num < black_num:
+            winner = white
             print("win black")
-            time.sleep(1)
-            exit()
+    return fin_game, winner
 
 
-def convert(x, y, turn):
+def convert(x, y, turn, board):
     for i in vec:
         for j in vec:
-            check_bool, endx, endy = put_check(x, y, i, j, turn)
+            check_bool, endx, endy = put_check(x, y, i, j, turn, board)
             if check_bool:
                 tmpx = x
                 tmpy = y
@@ -137,9 +146,10 @@ def convert(x, y, turn):
         for j in range(cell):
             if board[i][j] == 2:
                 board[i][j] = 0
+    return board
 
 
-def put_able_check(turn):
+def put_able_check(turn, board):
     put_able_cnt = 0
     for i in range(cell):
         for j in range(cell):
@@ -148,7 +158,7 @@ def put_able_check(turn):
             
             for k in vec:
                 for l in vec:
-                    put_bool, tmp, tmp = put_check(i, j, k, l, turn)
+                    put_bool, tmp, tmp = put_check(i, j, k, l, turn, board)
                     if put_bool:
                         #print(i, j, k, l, put_bool)
                         board[i][j] = 2
@@ -157,10 +167,10 @@ def put_able_check(turn):
                 else:
                     continue
                 break
-    return put_able_cnt
+    return put_able_cnt, board
 
 
-def put_check(x, y, vecx, vecy, turn):
+def put_check(x, y, vecx, vecy, turn, board):
     x += vecx
     y += vecy
     if x < 0 or y < 0 or x > cell-1 or y > cell-1:
@@ -182,7 +192,7 @@ def put_check(x, y, vecx, vecy, turn):
     return False, x, y
 
 
-def input_num():
+def input_num(board):
     global kihu_read
     global kihu_read_cnt
     while True:
@@ -210,7 +220,7 @@ def input_num():
     return x, y
 
 
-def print_out():
+def print_out(board):
     print(" |", end="")
     for i in range(cell):
         print(" {0} ".format(i), end="|")
@@ -230,14 +240,15 @@ def print_out():
         print("")
         print("ーーーーーーーーーーーーーーーーー")
 
-def board_reset():
-    global board
+def board_new():
     board = [[0 for i in range(cell)]for j in range(cell)]
     board = np.array(board)
     board[3][4] = black
     board[4][3] = black
     board[3][3] = white
     board[4][4] = white
+    return board
 
 if __name__ == '__main__':
-    main(start_turn)
+    board = board_new()
+    winner = main(start_turn, board)
