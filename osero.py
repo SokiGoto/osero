@@ -12,8 +12,11 @@ white = -1
 blank = 0
 black = 1
 
-player_white = ["cp", "deep1"]
-player_black = ["cpu", "deep1_forbid"]
+player_white = ["cpu", "deep1_forbid"]
+player_black = ["cpu", "table"]
+
+kihu_white = []
+kihu_black = []
 
 support = True
 
@@ -74,6 +77,10 @@ def main(turn, board):
             else:
                 x, y = input_num(board)
 
+        if turn == white:
+            kihu_white.append([x,y])
+        else:
+            kihu_black.append([x,y])
         if kihu:
             with open(filepath, mode = "a") as f:
                 f.write("{} {}\n".format(x, y))
@@ -93,6 +100,10 @@ def computer(turn, board, mode = "random"):
         x,y = cpu.cpu_weak(board, turn)
     elif mode == "deep1_forbid":
         x,y = cpu.cpu_weak_forbid(board, turn)
+    elif mode == "deep":
+        x,y = cpu.cpu_deep(board, turn, 3)
+    elif mode == "table":
+        x,y = cpu.cpu_table(board, turn)
     else:
         x,y = cpu.cpu_random(board)
     return x, y
@@ -255,19 +266,48 @@ if __name__ == '__main__':
     board = board_new()
     winner = main(start_turn, board)
 
+    cpu.q_learning.new_table()
+
     #win_white = 0
     #win_black = 0
     #drawww    = 0
-    #n = 400
+    #n = 100
     #for i in range(n):
+    #    kihu_white = []
+    #    kihu_black = []
+    #    
     #    board = board_new()
     #    winner = main(start_turn, board)
+    #    
+    #    white_table = np.load("white_table.npy")
+    #    black_table = np.load("black_table.npy")
     #    if winner == white:
     #        win_white += 1
+    #        for li in kihu_white:
+    #            white_table[li[0]][li[1]] += 1
+    #        for li in kihu_black:
+    #            black_table[li[0]][li[1]] -= 1
     #    elif winner == black:
     #        win_black += 1
+    #        for li in kihu_white:
+    #            white_table[li[0]][li[1]] -= 1
+    #        for li in kihu_black:
+    #            black_table[li[0]][li[1]] += 1
     #    else:
     #        drawww += 1
+    #        for li in kihu_white:
+    #            white_table[li[0]][li[1]] -= 1
+    #        for li in kihu_black:
+    #            black_table[li[0]][li[1]] += 1
+    #    #print(white_table)
+    #    #print("=======================")
+    #    #print(black_table)
+    #    ##time.sleep(1)
+    #    #np.save("white_table.npy", white_table)
+    #    #np.save("black_table.npy", black_table)
+
+    #        
+
     #    print("white : ", win_white, "  ", win_white / (i+1) * 100, "%")
     #    print("black : ", win_black, "  ", win_black / (i+1) * 100, "%")
     #    print("draw  : ", drawww, "  ", drawww / (i+1) * 100, "%")
