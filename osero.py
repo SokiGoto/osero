@@ -266,7 +266,6 @@ if __name__ == '__main__':
     board = board_new()
     winner = main(start_turn, board)
 
-    cpu.q_learning.new_table()
 
     #win_white = 0
     #win_black = 0

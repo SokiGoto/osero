@@ -164,27 +164,6 @@ def cpu_deep(board_org, turn, deep_max = 5):
     return x, y
 
 
-class q_learning():
-    def new_table():
-        table = np.zeros((64, 3 ** 8))
-        for i in range(8):
-            s = i * 8 + 1
-            e = s + 7
-            filename = "qtable/qtable_" + str(s) + "-" + str(e) + ".npy"
-            np.save(filename, table)
-    def load_table(start):
-        filename = "qtable/qtable_" + str(start) + "-" + str(start + 7) + ".npy"
-        table = np.load(filename)
-        return table
-
-    def save_table(start, table):
-        filename = "qtable/qtable_" + str(start) + "-" + str(start + 7) + ".npy"
-        np.save(filename, table)
-
-    def computer(board):
-        np.load()
-        return x, y
-
 def cpu_random(board):
     put_able_list = []
     for i in range(cell):
