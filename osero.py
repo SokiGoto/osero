@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/opt/intel/oneapi/intelpython/latest/bin/python3
 import sys
 import time
 import random
@@ -12,8 +12,8 @@ white = -1
 blank = 0
 black = 1
 
-player_white = ["cpu", "deep1_forbid"]
-player_black = ["cpu", "table"]
+player_white = ["cpu", "random", ""]
+player_black = ["cpu", "cnw", "cnw/saved_model_reversi/my_model"]
 
 kihu_white = []
 kihu_black = []
@@ -58,6 +58,28 @@ if kihu:
     f =  open(filepath, mode = "w")
     f.close()
 
+def computer(turn, board, mode = "random"):
+    if mode == "random":
+        x,y = cpu.cpu_random(board)
+    elif mode == "deep1":
+        x,y = cpu.cpu_weak(board, turn)
+    elif mode == "deep1_forbid":
+        x,y = cpu.cpu_weak_forbid(board, turn)
+    elif mode == "deep":
+        x,y = cpu.cpu_deep(board, turn, 3)
+    elif mode == "table":
+        x,y = cpu.cpu_table(board, turn)
+    elif mode == "cnw":
+        x,y  = cpu.cnw.predict(board, turn)
+        if board[x][y] != 2:
+            print("error cnw")
+            x,y = cpu.cpu_weak_forbid(board, turn)
+            #exit()
+    else:
+        x,y = cpu.cpu_random(board)
+    return x, y
+
+
 def main(turn, board):
     put_able_cnt, board = put_able_check(turn, board)
     print_out(board)
@@ -93,20 +115,6 @@ def main(turn, board):
     winner = main(turn*-1, board)
     return winner
 
-def computer(turn, board, mode = "random"):
-    if mode == "random":
-        x,y = cpu.cpu_random(board)
-    elif mode == "deep1":
-        x,y = cpu.cpu_weak(board, turn)
-    elif mode == "deep1_forbid":
-        x,y = cpu.cpu_weak_forbid(board, turn)
-    elif mode == "deep":
-        x,y = cpu.cpu_deep(board, turn, 3)
-    elif mode == "table":
-        x,y = cpu.cpu_table(board, turn)
-    else:
-        x,y = cpu.cpu_random(board)
-    return x, y
 
 
 def fin_game_check(turn, board, passpass = False):
@@ -267,46 +275,46 @@ if __name__ == '__main__':
     winner = main(start_turn, board)
 
 
-    #win_white = 0
-    #win_black = 0
-    #drawww    = 0
-    #n = 100
-    #for i in range(n):
-    #    kihu_white = []
-    #    kihu_black = []
-    #    
-    #    board = board_new()
-    #    winner = main(start_turn, board)
-    #    
-    #    white_table = np.load("white_table.npy")
-    #    black_table = np.load("black_table.npy")
-    #    if winner == white:
-    #        win_white += 1
-    #        for li in kihu_white:
-    #            white_table[li[0]][li[1]] += 1
-    #        for li in kihu_black:
-    #            black_table[li[0]][li[1]] -= 1
-    #    elif winner == black:
-    #        win_black += 1
-    #        for li in kihu_white:
-    #            white_table[li[0]][li[1]] -= 1
-    #        for li in kihu_black:
-    #            black_table[li[0]][li[1]] += 1
-    #    else:
-    #        drawww += 1
-    #        for li in kihu_white:
-    #            white_table[li[0]][li[1]] -= 1
-    #        for li in kihu_black:
-    #            black_table[li[0]][li[1]] += 1
-    #    #print(white_table)
-    #    #print("=======================")
-    #    #print(black_table)
-    #    ##time.sleep(1)
-    #    #np.save("white_table.npy", white_table)
-    #    #np.save("black_table.npy", black_table)
+    win_white = 0
+    win_black = 0
+    drawww    = 0
+    n = 100
+    for i in range(n):
+        kihu_white = []
+        kihu_black = []
+        
+        board = board_new()
+        winner = main(start_turn, board)
+        
+        #white_table = np.load("white_table.npy")
+        #black_table = np.load("black_table.npy")
+        if winner == white:
+            win_white += 1
+            #for li in kihu_white:
+            #    white_table[li[0]][li[1]] += 1
+            #for li in kihu_black:
+            #    black_table[li[0]][li[1]] -= 1
+        elif winner == black:
+            win_black += 1
+            #for li in kihu_white:
+            #    white_table[li[0]][li[1]] -= 1
+            #for li in kihu_black:
+            #    black_table[li[0]][li[1]] += 1
+        else:
+            drawww += 1
+            #for li in kihu_white:
+            #    white_table[li[0]][li[1]] -= 1
+            #for li in kihu_black:
+            #    black_table[li[0]][li[1]] += 1
+        #print(white_table)
+        #print("=======================")
+        #print(black_table)
+        ##time.sleep(1)
+        #np.save("white_table.npy", white_table)
+        #np.save("black_table.npy", black_table)
 
-    #        
+            
 
-    #    print("white : ", win_white, "  ", win_white / (i+1) * 100, "%")
-    #    print("black : ", win_black, "  ", win_black / (i+1) * 100, "%")
-    #    print("draw  : ", drawww, "  ", drawww / (i+1) * 100, "%")
+        print("white : ", win_white, "  ", win_white / (i+1) * 100, "%")
+        print("black : ", win_black, "  ", win_black / (i+1) * 100, "%")
+        print("draw  : ", drawww, "  ", drawww / (i+1) * 100, "%")

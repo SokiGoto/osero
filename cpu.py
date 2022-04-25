@@ -11,6 +11,14 @@ blank = osero.blank
 black = osero.black
 white = osero.white
 
+if osero.player_white[1] == "cnw" or osero.player_black[1] == "cnw":
+    from tensorflow import keras
+    import numpy as np
+    if osero.player_white[1] == "cnw":
+        model_white = keras.models.load_model(osero.player_white[2])
+    if osero.player_black[1] == "cnw":
+        model_black = keras.models.load_model(osero.player_black[2])
+
 def cpu(board):
     max_deep = 3
     deep = 0
@@ -162,6 +170,40 @@ def cpu_deep(board_org, turn, deep_max = 5):
 
     print("put", x, y)
     return x, y
+
+class cnw():
+    def predict(board, turn):
+        black_board = [[0 for _ in range(cell)]for _ in range(cell)]
+        white_board = [[0 for _ in range(cell)]for _ in range(cell)]
+
+        for i in range(cell):
+            for j in range(cell):
+                num = board[i][j]
+                if num == white:
+                    white_board[i][j] = 1
+                if num == black:
+                    black_board[i][j] = 1
+        if turn == white:
+            my_data = white_board
+            enemy_data = black_board
+        else :
+            my_data = black_board
+            enemy_data = white_board
+        board_data = np.array([[my_data, enemy_data]], dtype=np.int8)
+
+        if turn == white:
+            pre = model_white.predict(board_data)
+        else :
+            pre = model_black.predict(board_data)
+        num = np.argmax(pre)
+        li = []
+        for i in range(cell):
+            for j in range(cell):
+                li.append([i, j])
+        x = li[num][0]
+        y = li[num][1]
+        print("put ",x, y, num)
+        return x, y
 
 
 def cpu_random(board):
